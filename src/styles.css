@@ -1,0 +1,170 @@
+import { useState } from 'react'
+
+const initialMessages = [
+  {
+    id: 1,
+    role: 'assistant',
+    content:
+      'Hi! I’m Flocks AI, your thoughtful assistant for brainstorming, writing, coding, and planning. Ask me anything.'
+  }
+]
+
+const prompts = [
+  'Help me plan a launch strategy',
+  'Write a product announcement',
+  'Explain this code in simple terms',
+  'Draft a professional email'
+]
+
+function generateReply(message) {
+  const text = message.toLowerCase()
+
+  if (text.includes('email') || text.includes('message')) {
+    return `Here’s a polished draft:\n\nSubject: Important Update\n\nHi there,\n\nThanks for your time and attention. I wanted to share a quick update and make sure we’re aligned on the next steps. I’ve outlined the key points below and would love to hear your thoughts.\n\nBest,\nFlocks AI`
+  }
+
+  if (text.includes('code') || text.includes('javascript') || text.includes('python') || text.includes('react')) {
+    return `Here’s the approach I’d recommend:\n\n1. Define the goal clearly.\n2. Write the smallest working version first.\n3. Validate behavior with a few focused tests.\n4. Improve readability and polish after the logic works.\n\nExample:\n\nconst greet = (name) => {\n  return `Hello, ${name}!`\n}\n\nconsole.log(greet('Flocks AI'))\n\nIf you want, I can turn this into a real component, function, or app for you.`
+  }
+
+  if (text.includes('plan') || text.includes('strategy') || text.includes('launch')) {
+    return `Absolutely — here’s a simple, effective plan:\n\n1. Clarify the audience and the problem you’re solving.\n2. Build a clear value proposition and demo.\n3. Ship a minimal version quickly.\n4. Gather feedback from early users.\n5. Improve based on real usage and repeat the loop.\n\nThis keeps the work focused without losing momentum.`
+  }
+
+  if (text.includes('summarize') || text.includes('summary')) {
+    return `Here’s a concise summary:\n\nThe core idea is to stay focused on the user’s problem, provide value quickly, and iterate based on feedback. Clear communication, strong structure, and thoughtful execution usually matter more than complexity.`
+  }
+
+  if (text.includes('brainstorm') || text.includes('idea') || text.includes('concept')) {
+    return `Here are a few ideas to explore:\n\n- Create a simple, elegant onboarding flow.\n- Focus on one clear use case before expanding.\n- Make the experience feel fast and human.\n- Build trust through transparency and useful guidance.\n\nIf you’d like, I can turn any one of these into a product concept or roadmap.`
+  }
+
+  return `That’s a great question. A strong starting point is to define the goal, keep the scope realistic, and focus on clarity. From there, I’d recommend a simple structure:\n\n- Understand the problem\n- Propose a clean solution\n- Test the idea quickly\n- Improve based on feedback\n\nIf you want, I can help turn that into a detailed plan, outline, draft, or implementation.`
+}
+
+export default function App() {
+  const [messages, setMessages] = useState(initialMessages)
+  const [input, setInput] = useState('')
+  const [isThinking, setIsThinking] = useState(false)
+
+  const handleSend = () => {
+    const trimmed = input.trim()
+
+    if (!trimmed) return
+
+    const userMessage = {
+      id: Date.now(),
+      role: 'user',
+      content: trimmed
+    }
+
+    const newMessages = [...messages, userMessage]
+    setMessages(newMessages)
+    setInput('')
+    setIsThinking(true)
+
+    window.setTimeout(() => {
+      const assistantMessage = {
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: generateReply(trimmed)
+      }
+
+      setMessages((current) => [...current, assistantMessage])
+      setIsThinking(false)
+    }, 700)
+  }
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+      handleSend()
+    }
+  }
+
+  return (
+    <div className="app-shell">
+      <aside className="sidebar">
+        <div className="brand-wrap">
+          <div className="brand-mark">F</div>
+          <div>
+            <p className="eyebrow">AI Workspace</p>
+            <h1>Flocks AI</h1>
+          </div>
+        </div>
+
+        <nav className="sidebar-nav">
+          <button className="nav-button active">Chat</button>
+          <button className="nav-button">Projects</button>
+          <button className="nav-button">Research</button>
+          <button className="nav-button">Writing</button>
+        </nav>
+
+        <div className="quick-prompts">
+          <p className="section-label">Quick prompts</p>
+          {prompts.map((prompt) => (
+            <button
+              key={prompt}
+              className="prompt-chip"
+              onClick={() => setInput(prompt)}
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
+      </aside>
+
+      <main className="chat-panel">
+        <header className="chat-header">
+          <div>
+            <p className="eyebrow">Assistant</p>
+            <h2>Flocks AI</h2>
+          </div>
+          <div className="status-pill">
+            <span className="status-dot" />
+            Online
+          </div>
+        </header>
+
+        <section className="messages">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`message-row ${message.role === 'user' ? 'user' : 'assistant'}`}
+            >
+              <div className="message-bubble">
+                {message.content.split('\n').map((line, index) => (
+                  <span key={`${message.id}-${index}`}>
+                    {line}
+                    <br />
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {isThinking && (
+            <div className="message-row assistant">
+              <div className="message-bubble typing-bubble">
+                <span />
+                <span />
+                <span />
+              </div>
+            </div>
+          )}
+        </section>
+
+        <footer className="composer">
+          <textarea
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            onKeyDown={handleKeyDown}
+            rows={1}
+            placeholder="Ask Flocks AI anything..."
+          />
+          <button onClick={handleSend}>Send</button>
+        </footer>
+      </main>
+    </div>
+  )
+}
